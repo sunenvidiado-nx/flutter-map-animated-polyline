@@ -1,4 +1,4 @@
-name: Create release
+name: Publish and create release
 
 on:
   workflow_dispatch:
@@ -7,7 +7,13 @@ on:
       - "*"
 
 jobs:
+  publish:
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+
   create-release:
+    needs: publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
