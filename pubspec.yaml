@@ -1,6 +1,6 @@
 name: flutter_map_animated_polyline
 description: Animate polylines with smooth transitions in flutter_map
-version: 0.0.1+1
+version: 0.0.2
 repository: https://github.com/sunenvidiado-nx/flutter-map-animated-polyline
 
 environment:

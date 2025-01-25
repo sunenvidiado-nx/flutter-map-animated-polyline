@@ -1,3 +1,9 @@
+## [0.0.2] - 2025-01-25
+
+### Changed
+
+- Raised minimum required version of `flutter_map` package to `^7.0.2`
+
 ## [0.0.1] - 2025-01-25
 
 ### Added
