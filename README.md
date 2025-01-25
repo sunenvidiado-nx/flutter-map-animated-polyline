@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/sunenvidiado-nx/flutter-map-animated-polyline/actions/workflows/test.yaml/badge.svg)](https://github.com/sunenvidiado-nx/flutter-map-animated-polyline/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/github/sunenvidiado-nx/flutter-map-animated-polyline/graph/badge.svg?token=5L9ZEZX78E)](https://codecov.io/github/sunenvidiado-nx/flutter-map-animated-polyline)
+[![pub package](https://img.shields.io/pub/v/flutter_map_animated_polyline.svg?color=blue)](https://pub.dev/packages/flutter_map_animated_polyline)
 [![Awesome Flutter](https://img.shields.io/badge/Awesome-Flutter-52bdeb.svg?longCache=true)](https://github.com/Solido/awesome-flutter)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/sunenvidiado-nx/very-simple-state-manager/main/LICENSE)
 
