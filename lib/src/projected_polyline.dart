@@ -1,32 +1,44 @@
 import 'dart:math' as Math;
 
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong2/latlong.dart';
 
+/// Represents a point with projected coordinates and its distance from the start
 class _ProjectedPoint {
-  CustomPoint<num> projectedCoordinates;
-  num distanceFromStart;
+  Math.Point<double> projectedCoordinates;
+  double distanceFromStart;
+
+  _ProjectedPoint({
+    required this.projectedCoordinates,
+    required this.distanceFromStart,
+  });
 }
 
+/// Manages a list of points with their projections and provides utilities for
+/// calculating portions of the polyline
 class ProjectedPointList {
-  List<LatLng> _pointList;
-  List<_ProjectedPoint> _points;
-  num _totalProjectedLength;
-  Crs _crs;
+  List<LatLng> _pointList = [];
+  List<_ProjectedPoint> _points = [];
+  double _totalProjectedLength = 0.0;
+  late Crs _crs;
 
-  ProjectedPointList(List<LatLng> pointList, [Crs crs]) {
-    _pointList = pointList;
+  /// Creates a new ProjectedPointList with the given points and optional CRS
+  ///
+  /// If no CRS is provided, defaults to EPSG:3857 (Web Mercator)
+  ProjectedPointList(List<LatLng> pointList, [Crs? crs]) {
+    if (pointList.isEmpty) {
+      throw ArgumentError('Point list cannot be empty');
+    }
+    _pointList = List.from(pointList);
     _project(crs ?? Epsg3857());
   }
 
-  num get totalProjectedLength => _totalProjectedLength;
+  double get totalProjectedLength => _totalProjectedLength;
 
   set crs(Crs crs) {
     if (_crs == crs) return;
     _project(crs);
   }
-
-  Crs get crs => _crs;
 
   set pointList(List<LatLng> pointList) {
     _pointList = pointList;
@@ -36,34 +48,49 @@ class ProjectedPointList {
   List<LatLng> get pointList => _pointList;
 
   void _project(Crs crs) {
-    var projectedPoints = _pointList
-        .map((coords) => _ProjectedPoint()
-          ..projectedCoordinates = crs.projection.project(coords)
-          ..distanceFromStart = 0.0)
-        .toList();
+    final projectedPoints = _pointList.map((coords) {
+      final projectedCoords = crs.projection.project(coords);
+      return _ProjectedPoint(
+        projectedCoordinates: projectedCoords,
+        distanceFromStart: 0.0,
+      );
+    }).toList();
+
     var entireLength = 0.0;
-    for (var c = 1; c < projectedPoints.length; c++) {
-      entireLength += _distance(projectedPoints[c - 1].projectedCoordinates,
-          projectedPoints[c].projectedCoordinates);
-      projectedPoints[c].distanceFromStart = entireLength;
+    for (var i = 1; i < projectedPoints.length; i++) {
+      entireLength += _distance(
+        projectedPoints[i - 1].projectedCoordinates,
+        projectedPoints[i].projectedCoordinates,
+      );
+      projectedPoints[i].distanceFromStart = entireLength;
     }
+
     _totalProjectedLength = entireLength;
     _points = projectedPoints;
     _crs = crs;
   }
 
+  /// Returns a portion of the polyline based on the given ratio (0.0 to 1.0)
+  ///
+  /// [portion] must be between 0.0 and 1.0 inclusive
   List<LatLng> portion(double portion) {
-    if (portion == 0) return [];
-    if (portion == 1) return _pointList;
-    var requestedLength = portion * _totalProjectedLength;
+    if (portion < 0.0 || portion > 1.0) {
+      throw ArgumentError('Portion must be between 0.0 and 1.0');
+    }
+    if (portion == 0.0) return [];
+    if (portion == 1.0) return List.from(_pointList);
+    if (_points.isEmpty) return [];
 
-    var nextPointIndex = _points
+    final requestedLength = portion * _totalProjectedLength;
+    final nextPointIndex = _points
         .indexWhere((point) => point.distanceFromStart >= requestedLength);
 
-    var newArr = _pointList.sublist(0, nextPointIndex);
+    if (nextPointIndex == -1) return List.from(_pointList);
+
+    final newArr = _pointList.sublist(0, nextPointIndex);
     if (_points[nextPointIndex].distanceFromStart > requestedLength) {
-      var previousPoint = _points[nextPointIndex - 1];
-      var nextPoint = _points[nextPointIndex];
+      final previousPoint = _points[nextPointIndex - 1];
+      final nextPoint = _points[nextPointIndex];
       newArr.add(_crs.projection.unproject(_pointBetween(
           previousPoint.projectedCoordinates,
           nextPoint.projectedCoordinates,
@@ -71,39 +98,21 @@ class ProjectedPointList {
     }
     return newArr;
   }
-
-  // List<CustomPoint> projdPortion(double portion) {
-  //   var requestedLength = portion * _totalProjectedLength;
-
-  //   var nextPointIndex = _points
-  //       .indexWhere((point) => point.distanceFromStart >= requestedLength);
-  //   var newArr = _points
-  //       .sublist(0, nextPointIndex + 1)
-  //       .map((e) => e.projectedCoordinates)
-  //       .toList();
-  //   if (_points[nextPointIndex].distanceFromStart > requestedLength) {
-  //     var previousPoint = _points[nextPointIndex - 1];
-  //     var nextPoint = _points[nextPointIndex];
-  //     newArr.add(_pointBetween(
-  //         previousPoint.projectedCoordinates,
-  //         nextPoint.projectedCoordinates,
-  //         requestedLength - previousPoint.distanceFromStart));
-  //   }
-  //   return newArr;
-  // }
 }
 
-double _distance(CustomPoint pointA, CustomPoint pointB) {
-  return Math.sqrt(
-      Math.pow(pointA.x - pointB.x, 2) + Math.pow(pointA.y - pointB.y, 2));
+/// Calculates the Euclidean distance between two points
+double _distance(Math.Point<double> pointA, Math.Point<double> pointB) {
+  final dx = pointA.x - pointB.x;
+  final dy = pointA.y - pointB.y;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
-CustomPoint _pointBetween(
-    CustomPoint pointA, CustomPoint pointB, num distanceFromPointA) {
+Math.Point<double> _pointBetween(Math.Point<double> pointA,
+    Math.Point<double> pointB, double distanceFromPointA) {
   var distanceBetweenPoints = _distance(pointA, pointB);
   var newX = pointA.x +
       (distanceFromPointA / distanceBetweenPoints) * (pointB.x - pointA.x);
   var newY = pointA.y +
       (distanceFromPointA / distanceBetweenPoints) * (pointB.y - pointA.y);
-  return CustomPoint(newX, newY);
+  return Math.Point(newX, newY);
 }

@@ -1,114 +1,145 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animated_polyline/flutter_map_animated_polyline.dart';
-import 'package:latlong/latlong.dart';
-import './data.dart';
+import 'package:latlong2/latlong.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Animated Polyline Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
-      home: MyHomePage(),
-      debugShowCheckedModeBanner: false,
+      home: const MyHomePage(title: 'Animated Polyline Demo'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  List<LatLng> pointsToShow = [];
-  ProjectedPointList projected;
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+  late final PolylineAnimationController _controller;
+  late final ProjectedPointList _projectedPoints;
+  double _portion = 0.0;
+  bool _isAnimating = false;
 
-  var animator = EasyAnimationController();
+  final List<LatLng> _route = [
+    LatLng(14.4793, 121.0198), // Paranaque City
+    LatLng(14.4499, 120.9833), // Las Pinas
+    LatLng(14.4316, 120.9142), // Bacoor City
+  ];
 
   @override
   void initState() {
     super.initState();
-    projected = ProjectedPointList(getPoints(0));
+    _controller = PolylineAnimationController(vsync: this);
+    _projectedPoints = ProjectedPointList(_route);
   }
 
-  Marker makeMarker(LatLng point, Color color) => Marker(
-      point: point,
-      height: 15,
-      width: 15,
-      builder: (ctx) => CircleAvatar(
-            backgroundColor: color,
-          ));
+  void _startAnimation() {
+    if (!_isAnimating) {
+      _controller.start(
+        initialPortion: _portion,
+        finishedPortion: 1.0,
+        animationDuration: const Duration(seconds: 3),
+        animationCurve: Curves.easeInOut,
+        onValueChange: (value) {
+          setState(() {
+            _portion = value;
+          });
+        },
+        onFinish: () {
+          setState(() {
+            _isAnimating = false;
+          });
+        },
+      );
+      setState(() {
+        _isAnimating = true;
+      });
+    }
+  }
 
+  void _resetAnimation() {
+    _controller.stop();
+    setState(() {
+      _portion = 0.0;
+      _isAnimating = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: Icon(Icons.play_arrow_rounded),
-            onPressed: () {
-              animator.start(
-                  initialPortion: 0.0,
-                  finishedPortion: 1.0,
-                  animationDuration: Duration(seconds: 10),
-                  animationCurve: Curves.easeInOutCubic,
-                  onValueChange: (value) {
-                    setState(() {
-                      pointsToShow = projected.portion(value);
-                    });
-                  });
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.fast_rewind_rounded),
-            onPressed: () {
-              animator.start(
-                  initialPortion: 1.0,
-                  finishedPortion: 0.0,
-                  animationDuration: Duration(seconds: 10),
-                  animationCurve: Curves.easeInSine,
-                  onValueChange: (value) {
-                    setState(() {
-                      pointsToShow = projected.portion(value);
-                    });
-                  });
-            },
-          )
-        ],
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
       ),
-      body: FlutterMap(
-        options: MapOptions(
-          bounds: LatLngBounds.fromPoints(getPoints(0)),
-          boundsOptions: FitBoundsOptions(padding: EdgeInsets.all(30)),
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            subdomains: ['a', 'b', 'c'],
-          ),
-          PolylineLayerOptions(
-            polylines: [
-              Polyline(
-                points: pointsToShow,
-                gradientColors: [Colors.orange, Colors.orange[900]],
-                colorsStop: [0.0, 1.0],
-                strokeWidth: 5.0,
-                // isDotted: true,
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: LatLng(14.5995, 120.9842), // Center on Manila
+              initialZoom: 10,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              ),
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: _projectedPoints.portion(_portion),
+                    color: Colors.blue,
+                    strokeWidth: 4.0,
+                  ),
+                ],
               ),
             ],
           ),
-          MarkerLayerOptions(
-            markers: [
-              makeMarker(getPoints(0).first, Colors.orange),
-              makeMarker(getPoints(0).last, Colors.orange[900]),
-            ],
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _isAnimating ? null : _startAnimation,
+                      child: const Text('Start Animation'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _isAnimating ? _resetAnimation : null,
+                      child: const Text('Reset'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

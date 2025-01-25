@@ -1,4 +1,4 @@
 library flutter_map_animated_polyline;
 
-export './src/animator.dart';
-export './src/projected_polyline.dart';
+export 'src/polyline_animation_controller.dart';
+export 'src/projected_polyline.dart';
