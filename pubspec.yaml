@@ -1,6 +1,7 @@
 name: flutter_map_animated_polyline
 description: Animate polylines in flutter_map
-version: 0.0.1
+version: 0.0.1+1
+repository: https://github.com/sunenvidiado-nx/flutter-map-animated-polyline
 
 environment:
   sdk: ^3.6.0
