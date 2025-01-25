@@ -1,5 +1,10 @@
 # flutter_map_animated_polyline
 
+[![Tests](https://github.com/sunenvidiado-nx/flutter-map-animated-polyline/actions/workflows/test.yaml/badge.svg)](https://github.com/sunenvidiado-nx/flutter-map-animated-polyline/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/github/sunenvidiado-nx/flutter-map-animated-polyline/graph/badge.svg?token=5L9ZEZX78E)](https://codecov.io/github/sunenvidiado-nx/flutter-map-animated-polyline)
+[![Awesome Flutter](https://img.shields.io/badge/Awesome-Flutter-52bdeb.svg?longCache=true)](https://github.com/Solido/awesome-flutter)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/sunenvidiado-nx/very-simple-state-manager/main/LICENSE)
+
 This package is a modernized fork of the original `flutter_map_animated_polyline`, updated to work with the latest versions of Flutter and related packages. It provides smooth animation capabilities for polylines in `flutter_map`, allowing you to create animated paths on maps with customizable animation duration and curves.
 
 ## Improvements
