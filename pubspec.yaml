@@ -1,5 +1,5 @@
 name: flutter_map_animated_polyline
-description: A new Flutter package project.
+description: Animate polylines in flutter_map
 version: 0.0.1
 
 environment:
