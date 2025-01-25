@@ -11,7 +11,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
-  flutter_map: ^6.2.1
+  flutter_map: ^7.0.2
   flutter_map_animated_polyline:
     path: ../
   latlong2: ^0.9.1

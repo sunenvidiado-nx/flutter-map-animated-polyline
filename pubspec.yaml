@@ -1,5 +1,5 @@
 name: flutter_map_animated_polyline
-description: Animate polylines in flutter_map
+description: Animate polylines with smooth transitions in flutter_map
 version: 0.0.1+1
 repository: https://github.com/sunenvidiado-nx/flutter-map-animated-polyline
 
@@ -9,8 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_map: ^6.2.1
-  flutter_map_tappable_polyline: ^6.0.0
+  flutter_map: ^7.0.2
   latlong2: ^0.9.1
   maps_toolkit: ^3.0.0
 
