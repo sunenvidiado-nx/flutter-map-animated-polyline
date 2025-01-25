@@ -33,20 +33,6 @@ class ProjectedPointList {
     _project(crs ?? Epsg3857());
   }
 
-  double get totalProjectedLength => _totalProjectedLength;
-
-  set crs(Crs crs) {
-    if (_crs == crs) return;
-    _project(crs);
-  }
-
-  set pointList(List<LatLng> pointList) {
-    _pointList = pointList;
-    _project(_crs);
-  }
-
-  List<LatLng> get pointList => _pointList;
-
   void _project(Crs crs) {
     final projectedPoints = _pointList.map((coords) {
       final projectedCoords = crs.projection.project(coords);
