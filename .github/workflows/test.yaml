@@ -37,8 +37,16 @@ jobs:
         run: flutter analyze --no-pub
 
       - name: Format
+        if: steps.check_tests.outputs.has_tests == 'true'
         run: dart format --set-exit-if-changed .
 
       - name: Run tests with coverage
         if: steps.check_tests.outputs.has_tests == 'true'
-        run: flutter test --test-randomize-ordering-seed random
+        run: flutter test --test-randomize-ordering-seed random --coverage
+
+      - name: Upload coverage reports to Codecov
+        if: steps.check_tests.outputs.has_tests == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: sunenvidiado-nx/flutter-map-animated-polyline
